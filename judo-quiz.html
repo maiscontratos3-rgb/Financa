@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz de Judô / BJJ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0d0d0f;
+    color: #f0ede8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  header h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: #f0ede8;
+  }
+
+  header p {
+    font-size: 0.85rem;
+    color: #888;
+    margin-top: 6px;
+  }
+
+  .belt {
+    display: inline-block;
+    width: 48px;
+    height: 8px;
+    border-radius: 2px;
+    margin: 12px 4px 0;
+  }
+
+  .card {
+    background: #18181b;
+    border: 1px solid #2a2a2f;
+    border-radius: 16px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 520px;
+    margin-bottom: 20px;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: #2a2a2f;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #e63946, #ff6b35);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .question-num {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #e63946;
+    margin-bottom: 10px;
+  }
+
+  .question-text {
+    font-size: 1.55rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 28px;
+    color: #f0ede8;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option-btn {
+    background: #0d0d0f;
+    border: 1.5px solid #2a2a2f;
+    border-radius: 10px;
+    color: #f0ede8;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 14px 18px;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: #e63946;
+    background: #1e1215;
+    transform: translateX(3px);
+  }
+
+  .option-btn .opt-letter {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: #2a2a2f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+
+  .option-btn.correct {
+    border-color: #22c55e;
+    background: #0d2018;
+  }
+  .option-btn.correct .opt-letter { background: #22c55e; color: #000; }
+
+  .option-btn.wrong {
+    border-color: #e63946;
+    background: #1e0d10;
+  }
+  .option-btn.wrong .opt-letter { background: #e63946; color: #fff; }
+
+  .option-btn:disabled { cursor: default; }
+
+  .feedback {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    display: none;
+  }
+
+  .feedback.show { display: block; }
+  .feedback.correct { background: #0d2018; color: #22c55e; border: 1px solid #22c55e44; }
+  .feedback.wrong { background: #1e0d10; color: #e63946; border: 1px solid #e6394644; }
+
+  .next-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 14px;
+    background: #e63946;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: none;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .next-btn:hover { background: #c2303b; transform: scale(1.01); }
+  .next-btn.show { display: block; }
+
+  /* Score screen */
+  .score-screen {
+    text-align: center;
+    padding: 40px 24px;
+  }
+
+  .score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid #e63946;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+  }
+
+  .score-num {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: #f0ede8;
+    line-height: 1;
+  }
+
+  .score-total {
+    font-size: 0.8rem;
+    color: #888;
+  }
+
+  .score-msg {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #f0ede8;
+  }
+
+  .score-sub {
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 28px;
+  }
+
+  .restart-btn {
+    padding: 14px 32px;
+    background: #e63946;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .restart-btn:hover { background: #c2303b; }
+
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    justify-content: center;
+  }
+
+  .stat {
+    background: #18181b;
+    border: 1px solid #2a2a2f;
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-align: center;
+    flex: 1;
+    max-width: 130px;
+  }
+
+  .stat-num { font-size: 1.6rem; font-weight: 900; }
+  .stat-label { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; }
+  .stat.green .stat-num { color: #22c55e; }
+  .stat.red .stat-num { color: #e63946; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Waza Quiz</h1>
+  <p>Técnicas de Judô / Ne-waza — Qual é o nome em português?</p>
+  <div>
+    <span class="belt" style="background:#fff;border:1px solid #333"></span>
+    <span class="belt" style="background:#3b82f6"></span>
+    <span class="belt" style="background:#a855f7"></span>
+    <span class="belt" style="background:#a16207"></span>
+    <span class="belt" style="background:#000"></span>
+  </div>
+</header>
+
+<div class="card" id="quiz-card">
+  <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+  <div class="question-num" id="q-num">Técnica 1 de 16</div>
+  <div class="question-text" id="q-text"></div>
+  <div class="options" id="options"></div>
+  <div class="feedback" id="feedback"></div>
+  <button class="next-btn" id="next-btn">Próxima →</button>
+</div>
+
+<script>
+const techniques = [
+  { jp: "Osoto Gari", pt: "Projeção direta por baixo", wrong: ["Varredura de perna avançada", "Grande ceifagem interna", "Montada"] },
+  { jp: "De-Ashi-Barai", pt: "Varredura de perna avançada", wrong: ["Projeção direta por baixo", "Def. Guilhotina", "100 kg"] },
+  { jp: "O-Uchi-Gari", pt: "Grande ceifagem interna", wrong: ["Varredura de perna avançada", "Montada inversa", "100 kg inverso"] },
+  { jp: "Kosoto-Gaki", pt: "Queda aplicada na Defesa de Guilhotina", wrong: ["Grande ceifagem interna", "Arm-lock", "Americano"] },
+  { jp: "Tate-Shiro-Gatame", pt: "Montada", wrong: ["100 kg", "Montada inversa", "100 kg inverso"] },
+  { jp: "Mune-Gatami", pt: "100 kg", wrong: ["Montada", "Gravata lateral", "Gravata Inversa"] },
+  { jp: "Kami-Shiro-Gatame", pt: "Montada inversa", wrong: ["Montada", "100 kg", "Gravata Inversa"] },
+  { jp: "Ushiro Kesa Gatame", pt: "Gravata Inversa", wrong: ["100 kg", "Montada inversa", "Gravata lateral"] },
+  { jp: "Hon-Kesa Gatame", pt: "Gravata lateral", wrong: ["100 kg", "Gravata Inversa", "Amassa pão"] },
+  { jp: "Juji Jime", pt: "Estrangulamento cruzado", wrong: ["Triângulo", "Amassa pão", "Mata-leão"] },
+  { jp: "Sankaku Jime", pt: "Triângulo", wrong: ["Estrangulamento cruzado", "Amassa pão", "Por trás segurando a lapela"] },
+  { jp: "Tsukomi Jime", pt: "Amassa pão", wrong: ["Triângulo", "Mata-leão", "Estrangulamento cruzado"] },
+  { jp: "Hadaka Jime", pt: "Mata-leão", wrong: ["Amassa pão", "Por trás segurando a lapela", "Arm-lock"] },
+  { jp: "Okuri-Eri-Jime", pt: "Por trás segurando a lapela", wrong: ["Mata-leão", "Estrangulamento cruzado", "Triângulo"] },
+  { jp: "Juji-Gatame", pt: "Arm-lock", wrong: ["Americano", "Mata-leão", "100 kg"] },
+  { jp: "Ude Garami", pt: "Americano", wrong: ["Arm-lock", "Gravata lateral", "Por trás segurando a lapela"] },
+];
+
+let shuffled = [];
+let current = 0;
+let score = 0;
+let answered = false;
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function startQuiz() {
+  shuffled = shuffle(techniques);
+  current = 0;
+  score = 0;
+  document.getElementById('quiz-card').innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    <div class="question-num" id="q-num"></div>
+    <div class="question-text" id="q-text"></div>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn">Próxima →</button>
+  `;
+  document.getElementById('next-btn').addEventListener('click', nextQuestion);
+  renderQuestion();
+}
+
+function renderQuestion() {
+  answered = false;
+  const tech = shuffled[current];
+  const total = shuffled.length;
+
+  document.getElementById('progress').style.width = `${((current) / total) * 100}%`;
+  document.getElementById('q-num').textContent = `Técnica ${current + 1} de ${total}`;
+  document.getElementById('q-text').textContent = tech.jp;
+
+  const allOptions = shuffle([tech.pt, ...tech.wrong.slice(0, 3)]);
+  const letters = ['A', 'B', 'C', 'D'];
+  const optionsDiv = document.getElementById('options');
+  optionsDiv.innerHTML = '';
+
+  allOptions.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span>${opt}`;
+    btn.addEventListener('click', () => selectOption(btn, opt, tech.pt));
+    optionsDiv.appendChild(btn);
+  });
+
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('next-btn').classList.remove('show');
+}
+
+function selectOption(btn, chosen, correct) {
+  if (answered) return;
+  answered = true;
+
+  const buttons = document.querySelectorAll('.option-btn');
+  buttons.forEach(b => {
+    b.disabled = true;
+    const text = b.textContent.trim().substring(1).trim(); // remove letter
+    if (text === correct) b.classList.add('correct');
+  });
+
+  const feedback = document.getElementById('feedback');
+
+  if (chosen === correct) {
+    btn.classList.add('correct');
+    score++;
+    feedback.textContent = '✓ Correto! Oss! 🥋';
+    feedback.className = 'feedback correct show';
+  } else {
+    btn.classList.add('wrong');
+    feedback.textContent = `✗ Era "${correct}"`;
+    feedback.className = 'feedback wrong show';
+  }
+
+  document.getElementById('next-btn').textContent = current + 1 < shuffled.length ? 'Próxima →' : 'Ver resultado';
+  document.getElementById('next-btn').classList.add('show');
+}
+
+function nextQuestion() {
+  current++;
+  if (current < shuffled.length) {
+    renderQuestion();
+  } else {
+    showScore();
+  }
+}
+
+function showScore() {
+  const total = shuffled.length;
+  const wrong = total - score;
+  let msg, sub;
+
+  if (score === total) { msg = "Perfeito! 🏆 Ippon!"; sub = "Você acertou tudo. Faixa preta merecida!"; }
+  else if (score >= total * 0.8) { msg = "Muito bem! 💪 Quase lá."; sub = "Só mais um pouco de treino."; }
+  else if (score >= total * 0.5) { msg = "Bom progresso! 🥋"; sub = "Continue treinando as técnicas que errou."; }
+  else { msg = "Precisa treinar mais! 😅"; sub = "Revise a lista e tente de novo."; }
+
+  document.getElementById('quiz-card').innerHTML = `
+    <div class="score-screen">
+      <div class="score-circle">
+        <div class="score-num">${score}</div>
+        <div class="score-total">de ${total}</div>
+      </div>
+      <div class="score-msg">${msg}</div>
+      <div class="score-sub">${sub}</div>
+      <div class="stats-row">
+        <div class="stat green"><div class="stat-num">${score}</div><div class="stat-label">Acertos</div></div>
+        <div class="stat red"><div class="stat-num">${wrong}</div><div class="stat-label">Erros</div></div>
+      </div>
+      <button class="restart-btn" onclick="startQuiz()">🔄 Tentar de novo</button>
+    </div>
+  `;
+}
+
+startQuiz();
+</script>
+</body>
+</html>
